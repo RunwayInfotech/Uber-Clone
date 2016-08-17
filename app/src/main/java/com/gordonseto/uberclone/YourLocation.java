@@ -23,6 +23,7 @@ import com.parse.FindCallback;
 import com.parse.Parse;
 import com.parse.ParseACL;
 import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
@@ -41,6 +42,8 @@ public class YourLocation extends FragmentActivity implements OnMapReadyCallback
     String provider;
 
     Boolean requestActive = false;
+    ParseGeoPoint userLocation;
+    Location location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +98,9 @@ public class YourLocation extends FragmentActivity implements OnMapReadyCallback
                 public void done(ParseException e) {
                     if (e == null) {
                         rideRequested();
+                        if (location != null){
+                            updateParseUserLocation(location);
+                        }
                     } else {
                         Log.i("MYAPP", e.toString());
                     }
@@ -143,7 +149,7 @@ public class YourLocation extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        Location location = locationManager.getLastKnownLocation(provider);
+        location = locationManager.getLastKnownLocation(provider);
         if (location != null){
             onLocationChanged(location);
         }
@@ -154,6 +160,32 @@ public class YourLocation extends FragmentActivity implements OnMapReadyCallback
         mMap.clear();
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 10));
         mMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("Your Location"));
+        if (requestActive) {
+            updateParseUserLocation(location);
+        }
+    }
+
+    public void updateParseUserLocation(Location location){
+        userLocation = new ParseGeoPoint(location.getLatitude(), location.getLongitude());
+        ParseQuery query = new ParseQuery<ParseObject>("Requests");
+        query.whereEqualTo("requesterUsername", ParseUser.getCurrentUser().getUsername());
+        query.findInBackground(new FindCallback<ParseObject>() {
+            @Override
+            public void done(List<ParseObject> objects, ParseException e) {
+                if (e == null){
+                    Log.i("MYAPP", "updating location");
+                    if (objects.size() > 0){
+                        for (ParseObject object : objects) {
+                            object.put("requesterLocation", userLocation);
+                            object.saveInBackground();
+                        }
+                    }
+                } else {
+                    Log.i("MYAPP", e.toString());
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override

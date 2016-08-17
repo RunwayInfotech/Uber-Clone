@@ -31,6 +31,12 @@ public class MainActivity extends AppCompatActivity {
 
         riderOrDriverSwitch = (Switch)findViewById(R.id.riderOrDriverSwitch);
 
+        try {
+            ParseUser.getCurrentUser().fetch();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
         if (ParseUser.getCurrentUser() == null) {
             ParseAnonymousUtils.logIn(new LogInCallback() {
                 @Override
@@ -70,7 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void redirectUser(){
         if (ParseUser.getCurrentUser().getBoolean("isDriver")){
-
+            Intent intent = new Intent(getApplicationContext(), ViewRequests.class);
+            startActivity(intent);
         } else {
             Intent intent = new Intent(getApplicationContext(), YourLocation.class);
             startActivity(intent);
