@@ -1,5 +1,6 @@
 package com.gordonseto.uberclone;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
             });
         } else {
             if (ParseUser.getCurrentUser().get("isDriver") != null){
-                Log.i("MYAPP", "Redirect");
+                redirectUser();
             }
         }
 
@@ -58,11 +59,21 @@ public class MainActivity extends AppCompatActivity {
             public void done(ParseException e) {
                 if (e == null) {
                     Log.i("MYAPP", "successful isDriver update");
+                    redirectUser();
                 } else {
                     Log.i("MYAPP", "unsuccessful isDriver update");
                     e.printStackTrace();
                 }
             }
         });
+    }
+
+    public void redirectUser(){
+        if (ParseUser.getCurrentUser().getBoolean("isDriver")){
+
+        } else {
+            Intent intent = new Intent(getApplicationContext(), YourLocation.class);
+            startActivity(intent);
+        }
     }
 }
