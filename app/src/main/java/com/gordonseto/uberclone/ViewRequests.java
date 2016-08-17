@@ -22,6 +22,7 @@ import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,14 +87,6 @@ public class ViewRequests extends AppCompatActivity implements LocationListener 
         }
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (checkMapPermissions()) {
-            locationManager.removeUpdates(this);
-        }
-    }
-
     private boolean checkMapPermissions(){
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return false;
@@ -125,6 +118,9 @@ public class ViewRequests extends AppCompatActivity implements LocationListener 
                 }
             }
         });
+
+        ParseUser.getCurrentUser().put("location", userLocation);
+        ParseUser.getCurrentUser().saveInBackground();
     }
 
     @Override
